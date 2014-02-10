@@ -1,5 +1,4 @@
-﻿using LINQtoCSV;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
+using LINQtoCSV;
 
 namespace WindowsFormsApplication1 {
     public partial class Form1 : Form {
@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1 {
             dict.Add("uncategory", "未分類作品");
 
             txtResult.Clear();
-            txtResult.Text += string.Format("{0}" + Environment.NewLine,DateTime.Now.ToString("yyyy/MM/dd hh:MM:ss"));
+            txtResult.Text += string.Format("{0}" + Environment.NewLine, DateTime.Now.ToString("yyyy/MM/dd hh:MM:ss"));
             foreach (KeyValuePair<string, List<songdata>> item in result) {
                 string outputFilename = string.Format("{0}-{1}.csv", simplefilename, item.Key);
                 outputFilename = Path.Combine(fileinfo.DirectoryName, outputFilename);//取得完整名稱，會與來源檔同一路徑
@@ -81,7 +81,8 @@ namespace WindowsFormsApplication1 {
 
         int getSongSize(songdata song) {
             //1,1,667817471,"Gwiyomi Song (Intro)","","","Hari"
-            return 14 + song.BatchNo.Length
+            const int fixedCharLength = 14 + 1;//14個標點跟斷行符號
+            return fixedCharLength + song.BatchNo.Length
                 + song.BatchSeqNo.Length
                 + song.AdamId.Length
                 + song.Title.Length
@@ -145,7 +146,7 @@ namespace WindowsFormsApplication1 {
             3400～4DFFh：中日韓認同表意文字擴充A區，總計收容6,582個中日韓漢字。
             4E00～9FFFh：中日韓認同表意文字區，總計收容20,902個中日韓漢字。
             A000～A4FFh：彝族文字區，收容中國南方彝族文字和字根。
-            AC00～D7FFh：韓文拼音組合字區，收容以韓文音符拼成的文字。
+            韓AC00～D7FFh：韓文拼音組合字區，收容以韓文音符拼成的文字。
             F900～FAFFh：中日韓兼容表意文字區，總計收容302個中日韓漢字。
             FB00～FFFDh：文字表現形式區，收容組合拉丁文字、希伯來文、阿拉伯文、中日韓直式標點、小符號、半角符號、全角符號等。
              */
@@ -154,12 +155,12 @@ namespace WindowsFormsApplication1 {
             // 判断中文
             if (System.Text.RegularExpressions.Regex.IsMatch(content, @"^[\u4e00-\u9fa5]+$"))
             // 判断日语
-            if (System.Text.RegularExpressions.Regex.IsMatch(content, @"^[\u0800-\u4e00]+$"))
+            if (System.Text.RegularExpressions.Regex.IsMatch(content, @"^[\u3040-\u30ff]+$"))
             // 判断韩语
             if  (System.Text.RegularExpressions.Regex.IsMatch(content, @"^[\uac00-\ud7ff]+$"))
             */
             Regex isChniese = new Regex(@"[\u4e00-\u9fff]", RegexOptions.IgnoreCase);
-            Regex isJapan = new Regex(@"[\u0800-\u4e00]", RegexOptions.IgnoreCase);
+            Regex isJapan = new Regex(@"[\u3040-\u30ff]", RegexOptions.IgnoreCase);
             Regex isKorean = new Regex(@"[\uac00-\ud7ff]", RegexOptions.IgnoreCase);
             Regex isEnglish = new Regex(@"[a-zA-Z]", RegexOptions.IgnoreCase);
 
@@ -250,13 +251,13 @@ namespace WindowsFormsApplication1 {
                 }
 
                 //區分檔案
-                if (isChniese.Match(song.Title).Success) {
-                    //華語作品：Title中含有/且前後都是中文字時，另列為組曲類型作品
-                    if (zho_rule1.Match(song.Title).Success) {
-                        song.Category += "Group,";
-                    }
-                    result["chinese"].Add(song);//華語作品
-                } else if (isJapan.Match(song.Title).Success || isKorean.Match(song.Title).Success) {
+                /*
+                 * 先分出日文/韓文到其它當中，
+                 * 再分出中文
+                 * 最後分出英文
+                 * 如以上皆無則列入無法辨識
+                 */
+                if (isJapan.Match(song.Title).Success || isKorean.Match(song.Title).Success) {
                     /*
                     *其他作品：
                     *1.Title內含有()通常為其翻譯曲名，擷取()內文字另為一欄為sub-title，
@@ -267,6 +268,12 @@ namespace WindowsFormsApplication1 {
                         song.subTitle = other_rule1_match.Groups[1].Value;
                     }
                     result["other"].Add(song);//日韓文 其它作品
+                } else if (isChniese.Match(song.Title).Success) {
+                    //華語作品：Title中含有/且前後都是中文字時，另列為組曲類型作品
+                    if (zho_rule1.Match(song.Title).Success) {
+                        song.Category += "Group,";
+                    }
+                    result["chinese"].Add(song);//華語作品
                 } else if (isEnglish.Match(song.Title).Success) {
                     /*
                     英文作品：(以下不分大小寫)

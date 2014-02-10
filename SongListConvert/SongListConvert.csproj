@@ -103,7 +103,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="LINQtoCSV.dll" />
-    <EmbeddedResource Include="Treetog-I-Audio-File.ico" />
+    <Content Include="Treetog-I-Audio-File.ico" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

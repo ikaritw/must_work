@@ -25,6 +25,9 @@ namespace WindowsFormsApplication1 {
         public string performer { get; set; }
         public string DP { get; set; }
         public string subTitle { get; set; }
+        public string Title1 { get; set; }
+        public string subArts1 { get; set; }
+        public string subArts2 { get; set; }
         public string OriginalTitle { get; set; }
     }
 }

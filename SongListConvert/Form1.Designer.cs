@@ -33,10 +33,11 @@
             this.lblFIlesize = new System.Windows.Forms.Label();
             this.txtResult = new System.Windows.Forms.TextBox();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.開啟OToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.說明LToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.label3 = new System.Windows.Forms.Label();
+            this.btnGetExistFile = new System.Windows.Forms.Button();
+            this.isCheckExist = new System.Windows.Forms.CheckBox();
+            this.txtExistFile = new System.Windows.Forms.TextBox();
+            this.btnLoadUnreconizeFile = new System.Windows.Forms.Button();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -44,15 +45,15 @@
             // 
             this.txtFilename.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtFilename.Location = new System.Drawing.Point(95, 28);
+            this.txtFilename.Location = new System.Drawing.Point(121, 30);
             this.txtFilename.Name = "txtFilename";
             this.txtFilename.ReadOnly = true;
-            this.txtFilename.Size = new System.Drawing.Size(535, 22);
+            this.txtFilename.Size = new System.Drawing.Size(451, 22);
             this.txtFilename.TabIndex = 1;
             // 
             // btnClearData
             // 
-            this.btnClearData.Location = new System.Drawing.Point(12, 110);
+            this.btnClearData.Location = new System.Drawing.Point(14, 182);
             this.btnClearData.Name = "btnClearData";
             this.btnClearData.Size = new System.Drawing.Size(75, 23);
             this.btnClearData.TabIndex = 2;
@@ -65,14 +66,14 @@
             this.progressOfFile.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.progressOfFile.Location = new System.Drawing.Point(0, 283);
             this.progressOfFile.Name = "progressOfFile";
-            this.progressOfFile.Size = new System.Drawing.Size(642, 23);
+            this.progressOfFile.Size = new System.Drawing.Size(584, 23);
             this.progressOfFile.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.progressOfFile.TabIndex = 3;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(31, 81);
+            this.label1.Location = new System.Drawing.Point(31, 157);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(56, 12);
             this.label1.TabIndex = 4;
@@ -82,16 +83,16 @@
             // 
             this.txtCurrentStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtCurrentStatus.Location = new System.Drawing.Point(95, 78);
+            this.txtCurrentStatus.Location = new System.Drawing.Point(95, 154);
             this.txtCurrentStatus.Name = "txtCurrentStatus";
             this.txtCurrentStatus.ReadOnly = true;
-            this.txtCurrentStatus.Size = new System.Drawing.Size(535, 22);
+            this.txtCurrentStatus.Size = new System.Drawing.Size(477, 22);
             this.txtCurrentStatus.TabIndex = 1;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(31, 53);
+            this.label2.Location = new System.Drawing.Point(120, 55);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(56, 12);
             this.label2.TabIndex = 4;
@@ -100,7 +101,7 @@
             // lblFIlesize
             // 
             this.lblFIlesize.AutoSize = true;
-            this.lblFIlesize.Location = new System.Drawing.Point(93, 53);
+            this.lblFIlesize.Location = new System.Drawing.Point(182, 55);
             this.lblFIlesize.Name = "lblFIlesize";
             this.lblFIlesize.Size = new System.Drawing.Size(0, 12);
             this.lblFIlesize.TabIndex = 4;
@@ -110,38 +111,21 @@
             this.txtResult.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtResult.Location = new System.Drawing.Point(95, 110);
+            this.txtResult.Location = new System.Drawing.Point(95, 182);
             this.txtResult.Multiline = true;
             this.txtResult.Name = "txtResult";
-            this.txtResult.Size = new System.Drawing.Size(535, 167);
+            this.txtResult.Size = new System.Drawing.Size(477, 95);
             this.txtResult.TabIndex = 5;
             // 
             // toolStrip1
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.開啟OToolStripButton,
-            this.toolStripSeparator,
             this.說明LToolStripButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(642, 25);
+            this.toolStrip1.Size = new System.Drawing.Size(584, 25);
             this.toolStrip1.TabIndex = 6;
             this.toolStrip1.Text = "toolStrip1";
-            // 
-            // 開啟OToolStripButton
-            // 
-            this.開啟OToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.開啟OToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("開啟OToolStripButton.Image")));
-            this.開啟OToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.開啟OToolStripButton.Name = "開啟OToolStripButton";
-            this.開啟OToolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.開啟OToolStripButton.Text = "開啟(&O)";
-            this.開啟OToolStripButton.Click += new System.EventHandler(this.開啟OToolStripButton_Click);
-            // 
-            // toolStripSeparator
-            // 
-            this.toolStripSeparator.Name = "toolStripSeparator";
-            this.toolStripSeparator.Size = new System.Drawing.Size(6, 25);
             // 
             // 說明LToolStripButton
             // 
@@ -153,24 +137,60 @@
             this.說明LToolStripButton.Text = "說明(&L)";
             this.說明LToolStripButton.Click += new System.EventHandler(this.說明LToolStripButton_Click);
             // 
-            // label3
+            // btnGetExistFile
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(31, 31);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(56, 12);
-            this.label3.TabIndex = 4;
-            this.label3.Text = "檔案名稱:";
+            this.btnGetExistFile.Enabled = false;
+            this.btnGetExistFile.Location = new System.Drawing.Point(14, 114);
+            this.btnGetExistFile.Name = "btnGetExistFile";
+            this.btnGetExistFile.Size = new System.Drawing.Size(101, 23);
+            this.btnGetExistFile.TabIndex = 7;
+            this.btnGetExistFile.Text = "載入已存在檔案";
+            this.btnGetExistFile.UseVisualStyleBackColor = true;
+            this.btnGetExistFile.Click += new System.EventHandler(this.btnGetExistFile_Click);
+            // 
+            // isCheckExist
+            // 
+            this.isCheckExist.AutoSize = true;
+            this.isCheckExist.Location = new System.Drawing.Point(14, 92);
+            this.isCheckExist.Name = "isCheckExist";
+            this.isCheckExist.Size = new System.Drawing.Size(144, 16);
+            this.isCheckExist.TabIndex = 8;
+            this.isCheckExist.Text = "是否截入已存在的資料";
+            this.isCheckExist.UseVisualStyleBackColor = true;
+            this.isCheckExist.CheckedChanged += new System.EventHandler(this.isCheckExist_CheckedChanged);
+            // 
+            // txtExistFile
+            // 
+            this.txtExistFile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtExistFile.Location = new System.Drawing.Point(122, 114);
+            this.txtExistFile.Name = "txtExistFile";
+            this.txtExistFile.ReadOnly = true;
+            this.txtExistFile.Size = new System.Drawing.Size(450, 22);
+            this.txtExistFile.TabIndex = 9;
+            // 
+            // btnLoadUnreconizeFile
+            // 
+            this.btnLoadUnreconizeFile.Location = new System.Drawing.Point(14, 28);
+            this.btnLoadUnreconizeFile.Name = "btnLoadUnreconizeFile";
+            this.btnLoadUnreconizeFile.Size = new System.Drawing.Size(101, 23);
+            this.btnLoadUnreconizeFile.TabIndex = 10;
+            this.btnLoadUnreconizeFile.Text = "待比對的檔案";
+            this.btnLoadUnreconizeFile.UseVisualStyleBackColor = true;
+            this.btnLoadUnreconizeFile.Click += new System.EventHandler(this.btnLoadUnreconizeFile_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(642, 306);
+            this.ClientSize = new System.Drawing.Size(584, 306);
+            this.Controls.Add(this.btnLoadUnreconizeFile);
+            this.Controls.Add(this.txtExistFile);
+            this.Controls.Add(this.isCheckExist);
+            this.Controls.Add(this.btnGetExistFile);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.txtResult);
             this.Controls.Add(this.lblFIlesize);
-            this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.progressOfFile);
@@ -200,10 +220,11 @@
         private System.Windows.Forms.Label lblFIlesize;
         private System.Windows.Forms.TextBox txtResult;
         private System.Windows.Forms.ToolStrip toolStrip1;
-        private System.Windows.Forms.ToolStripButton 開啟OToolStripButton;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator;
         private System.Windows.Forms.ToolStripButton 說明LToolStripButton;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button btnGetExistFile;
+        private System.Windows.Forms.CheckBox isCheckExist;
+        private System.Windows.Forms.TextBox txtExistFile;
+        private System.Windows.Forms.Button btnLoadUnreconizeFile;
     }
 }
 

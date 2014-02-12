@@ -26,8 +26,17 @@ namespace WindowsFormsApplication1 {
         public string DP { get; set; }
         public string subTitle { get; set; }
         public string Title1 { get; set; }
-        public string subArts1 { get; set; }
-        public string subArts2 { get; set; }
+        public string Arts1 { get; set; }
+        public string Arts2 { get; set; }
         public string OriginalTitle { get; set; }
+        public string OriginalArts { get; set; }
+        public string isExist { get; set; }
+    }
+
+    public class existSong {
+        [CsvColumn(FieldIndex = 0)]
+        public string AdamId { get; set; }
+        [CsvColumn(FieldIndex = 2)]
+        public string Title { get; set; }
     }
 }

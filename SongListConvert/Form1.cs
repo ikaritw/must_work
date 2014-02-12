@@ -18,6 +18,7 @@ namespace WindowsFormsApplication1 {
         int currentProgressSize = 0;
         String songfilename = string.Empty;
         FileInfo fileinfo;
+        Dictionary<string, string> existSong = new Dictionary<string, string>();
 
         //宣告delegate
         delegate void MyInvokeUpdateLab(int stepSize, string title);
@@ -38,6 +39,7 @@ namespace WindowsFormsApplication1 {
             dict.Add("other", "其它作品");
             dict.Add("english", "英語作品");
             dict.Add("uncategory", "未分類作品");
+            dict.Add("exist", "已存在作品");
 
             txtResult.Clear();
             txtResult.Text += string.Format("{0}" + Environment.NewLine, DateTime.Now.ToString("yyyy/MM/dd hh:MM:ss"));
@@ -116,8 +118,8 @@ namespace WindowsFormsApplication1 {
             CsvContext cc = new CsvContext();
             IEnumerable<songdata> songlist = cc.Read<songdata>(filename, cv);
 
-
-            string pattern1 = "[!@#\\$%\\^\\*…~'\"`‘’”\\.\\-]";
+            //用空白置換
+            string pattern1 = "[!@#\\$%\\^\\*…~'\"`‘’”\\-:：_]";
             string replacement1 = " ";
             Regex rgx1 = new Regex(pattern1, RegexOptions.IgnoreCase);
 
@@ -131,7 +133,8 @@ namespace WindowsFormsApplication1 {
             string pattern4 = @"(\d{1,}[\.\-_]).*";
             Regex rgx4 = new Regex(pattern4);
 
-            string pattern6 = @"[{\[(](feat.*|bonus track|instrumental|(acoustic|piano|guitar|main|demonstration|karaoke)\sversion|remastered|live|demo|radio edit|audio mastertone)[}\[)]";
+            //title中要刪除的
+            string pattern6 = @"[{\[(](feat.*|bonus track|instrumental|(acoustic|piano|guitar|main|demonstration|karaoke)\sversion|remastered|live|demo|radio edit|audio mastertone|without overdubs|with the band|ringtone|remixed)[}\[)]";
             Regex rgx6 = new Regex(pattern6, RegexOptions.IgnoreCase);
 
             string pattern7_KOR = @"[{\[(](korean ver(sion)?|韓(文|國?語)?)[}\])]";//→KOR
@@ -151,30 +154,25 @@ namespace WindowsFormsApplication1 {
             韓AC00～D7FFh：韓文拼音組合字區，收容以韓文音符拼成的文字。
             F900～FAFFh：中日韓兼容表意文字區，總計收容302個中日韓漢字。
             FB00～FFFDh：文字表現形式區，收容組合拉丁文字、希伯來文、阿拉伯文、中日韓直式標點、小符號、半角符號、全角符號等。
-             */
-
-            /*
-            // 判断中文
-            if (System.Text.RegularExpressions.Regex.IsMatch(content, @"^[\u4e00-\u9fa5]+$"))
-            // 判断日语
-            if (System.Text.RegularExpressions.Regex.IsMatch(content, @"^[\u3040-\u30ff]+$"))
-            // 判断韩语
-            if  (System.Text.RegularExpressions.Regex.IsMatch(content, @"^[\uac00-\ud7ff]+$"))
+            判断日语^[\u3040-\u30ff]
+            判断韩语[\uac00-\ud7ff]
+            判断中文[\u4e00-\u9fa5]
             */
-            Regex isChniese = new Regex(@"[\u4e00-\u9fff]", RegexOptions.IgnoreCase);
-            Regex isJapan = new Regex(@"[\u3040-\u30ff]", RegexOptions.IgnoreCase);
+            Regex isJapan = new Regex(@"[\u3040-\u30ff？]", RegexOptions.IgnoreCase);
             Regex isKorean = new Regex(@"[\uac00-\ud7ff]", RegexOptions.IgnoreCase);
+            Regex isChniese = new Regex(@"[\u4e00-\u9fff]", RegexOptions.IgnoreCase);
             Regex isEnglish = new Regex(@"[a-zA-Z]", RegexOptions.IgnoreCase);
 
             Dictionary<string, List<songdata>> result = new Dictionary<string, List<songdata>>();
-            result.Add("chinese", new List<songdata>());
+            result.Add("exist", new List<songdata>());
             result.Add("other", new List<songdata>());
+            result.Add("chinese", new List<songdata>());
             result.Add("english", new List<songdata>());
             result.Add("uncategory", new List<songdata>());
 
             //華語作品
-            Regex zho_rule1 = new Regex(@"[\u4e00-\u9fff]+/[\u4e00-\u9fff]+", RegexOptions.IgnoreCase);
-            Regex cht_title_rule1 = new Regex(@"\((.*)\)");
+            Regex zho_rule1 = new Regex(@"[\u4e00-\u9fff\s]+[/\+][\u4e00-\u9fff\s]+", RegexOptions.IgnoreCase);
+            Regex cht_title_rule1 = new Regex(@"(.*)\((.*)\)");
             Match cht_title_rule1_match = null;
 
             Regex cht_arts_rule1 = new Regex(@"(.*)\((.*)\)");
@@ -182,8 +180,10 @@ namespace WindowsFormsApplication1 {
             Match cht_arts_rule1_match = null;
             Match cht_arts_rule2_match = null;
             string[] artsArray;
-            List<string> subart1 = new List<string>();
-            List<string> subart2 = new List<string>();
+            List<string> ListArts = new List<string>();
+            List<string> ListArts1 = new List<string>();
+            List<string> ListArts2 = new List<string>();
+            Regex cht_title_rule2 = new Regex(@"\((.*)\)");//華語要置換title的[.,]為空白
 
             //英語作品
             Regex eng_rule1 = new Regex(@"^(the|a|an)\s", RegexOptions.IgnoreCase);
@@ -194,7 +194,7 @@ namespace WindowsFormsApplication1 {
             Regex eng_rule3_2 = new Regex(@"symphony.*", RegexOptions.IgnoreCase);
             Match eng_rule3_1_match = null;
             Match eng_rule3_2_match = null;
-            Regex eng_rule4 = new Regex(@"[a-zA-Z]+/[a-zA-Z]+", RegexOptions.IgnoreCase);
+            Regex eng_rule4 = new Regex(@"[a-zA-Z\s]+/[a-zA-Z\s]+", RegexOptions.IgnoreCase);
 
             //其它作品
             Regex other_rule1 = new Regex(@".*\((.*)\).*", RegexOptions.IgnoreCase);
@@ -202,6 +202,7 @@ namespace WindowsFormsApplication1 {
 
             int totalCount = 0;
             int stepSize = 0;//目前處理的長度
+            bool isHasKey = (this.existSong.Count > 0);
             /*----------------迴圈開始------------------*/
             foreach (var song in songlist) {
                 stepSize = getSongSize(song);
@@ -209,9 +210,21 @@ namespace WindowsFormsApplication1 {
 
                 //使用主緒更新Label
                 Invoke(invokeLabel, currentProgressSize, string.Format("{0}:{1}", totalCount, song.Title));
+                if ("Batch No" == song.BatchNo) {
+                    continue;//略過第一筆
+                }
 
-                //把title複製為OriginalTitle
+                if (isHasKey) {
+                    if (existSong.ContainsKey(song.AdamId)) {
+                        song.isExist = existSong[song.AdamId];
+                    } else {
+                        song.isExist = "";
+                    }
+                }
+
+                //把title,arts複製一份
                 song.OriginalTitle = song.Title;
+                song.OriginalArts = song.Arts;
 
                 //1 將檔案內指定符號用空白置換
                 song.Title = rgx1.Replace(song.Title, replacement1);
@@ -266,7 +279,10 @@ namespace WindowsFormsApplication1 {
                  * 最後分出英文
                  * 如以上皆無則列入無法辨識
                  */
-                if (isJapan.Match(song.Title).Success || isKorean.Match(song.Title).Success) {
+                if (!string.IsNullOrEmpty(song.isExist)) {
+                    //已存在就另外放
+                    result["exist"].Add(song);//在isExist欄位裡會有對應的資料
+                } else if (isJapan.Match(song.Title).Success || isKorean.Match(song.Title).Success) {
                     /*
                     *其他作品：
                     *1.Title內含有()通常為其翻譯曲名，擷取()內文字另為一欄為sub-title，
@@ -284,63 +300,42 @@ namespace WindowsFormsApplication1 {
                     }
                     result["chinese"].Add(song);//華語作品
 
-                    //TODO title需增加判斷
-                    //TITLE→TITLE,TITLE1
                     //rule1:有括號要分2欄
                     cht_title_rule1_match = cht_title_rule1.Match(song.Title);
                     if (cht_title_rule1_match.Success) {
-                        song.Title1 = cht_title_rule1_match.Groups[1].Value;
-                        song.Title = cht_title_rule1.Replace(song.Title, string.Empty);
+                        song.Title = cht_title_rule1_match.Groups[1].Value;
+                        song.Title1 = cht_title_rule1_match.Groups[2].Value;
                     }
-                    //TODO arts需增加判斷
-                    //ARTS→SUBARTS1,SUBARTS2
-                    //rule1:有括號要分2欄
-                    if (song.Arts.IndexOf('/') > -1) {
-                        artsArray = song.Arts.Split('/');
-                        subart1.Clear();
-                        subart2.Clear();
 
-                        foreach (string art in artsArray) {
-                            cht_arts_rule1_match = cht_arts_rule1.Match(art);// AAAA(BBBB)
-                            cht_arts_rule2_match = cht_arts_rule2.Match(art);// 中中中EEE
-                            if (cht_arts_rule1_match.Success) {
-                                subart1.Add(cht_arts_rule1_match.Groups[1].Value);
-                                subart2.Add(cht_arts_rule1_match.Groups[2].Value);
-                            } else if (cht_arts_rule2_match.Success) {
-                                subart1.Add(cht_arts_rule2_match.Groups[1].Value);
-                                subart2.Add(cht_arts_rule2_match.Groups[2].Value);
-                            } else {
-                                subart1.Add(art);
-                            }
-                        }
-                        song.subArts1 = string.Join("/", subart1.ToArray());
-                        song.subArts2 = string.Join("/", subart2.ToArray());
-                    } else {
-                        cht_arts_rule1_match = cht_arts_rule1.Match(song.Arts);
+                    //ARTS→ARTS1,ARTS2
+                    artsArray = song.Arts.Split('/');//有些Arts會用/區隔
+                    ListArts.Clear();
+                    ListArts1.Clear();
+                    ListArts2.Clear();
+                    for (int i = 0; i < artsArray.Length; i++) {
+                        string artStr = artsArray[i];
+                        //1.含有括號
+                        cht_arts_rule1_match = cht_arts_rule1.Match(artStr);// 中中中AAA(BBBB)
                         if (cht_arts_rule1_match.Success) {
-                            song.subArts1 = cht_arts_rule1_match.Groups[1].Value;
-                            song.subArts2 = cht_arts_rule1_match.Groups[2].Value;
+                            ListArts1.Add(cht_arts_rule1_match.Groups[2].Value);//取出括號
+                            artStr = cht_arts_rule1_match.Groups[1].Value;//保留括號前的資料
                         }
-                        //rule2:subArts1中英文要拆2欄
-                        if (string.IsNullOrEmpty(song.subArts1)) {
-                            //art1無值時，由art來判斷
-                            cht_arts_rule2_match = cht_arts_rule2.Match(song.Arts);
-                        } else {
-                            cht_arts_rule2_match = cht_arts_rule2.Match(song.subArts1);
-                        }
-                        if (cht_arts_rule2_match.Success) {
-                            song.subArts1 = cht_arts_rule2_match.Groups[1].Value;
-                            if (string.IsNullOrEmpty(song.subArts2)) {
-                                song.subArts2 = cht_arts_rule2_match.Groups[2].Value;
-                            } else {
-                                song.subArts2 = cht_arts_rule2_match.Groups[2].Value + song.subArts2;
-                            }
-                        }
-                    }
 
-                    if (string.IsNullOrEmpty(song.subArts1)) {
-                        song.subArts1 = song.Arts;
+                        //2.中英文要拆2欄
+                        cht_arts_rule2_match = cht_arts_rule2.Match(artStr);// 中中中AAA
+                        if (cht_arts_rule2_match.Success) {
+                            ListArts2.Add(cht_arts_rule2_match.Groups[2].Value);//取出英文
+                            artStr = cht_arts_rule2_match.Groups[1].Value;//保留中文
+                        }
+
+                        ListArts.Add(artStr);
                     }
+                    song.Arts = string.Join("/", ListArts.ToArray());
+                    song.Arts1 = string.Join("/", ListArts1.ToArray());
+                    song.Arts2 = string.Join("/", ListArts2.ToArray());
+
+                    //華語要置換title的[.,]為空白
+                    song.Title = cht_title_rule2.Replace(song.Title, replacement1);
                 } else if (isEnglish.Match(song.Title).Success) {
                     /*
                     英文作品：(以下不分大小寫)
@@ -363,6 +358,24 @@ namespace WindowsFormsApplication1 {
                         song.Category += "Group,";
                     }
 
+                    //ARTS→ARTS1,ARTS2
+                    artsArray = song.Arts.Split('/');//有些Arts會用/區隔
+                    ListArts.Clear();
+                    ListArts1.Clear();
+                    ListArts2.Clear();
+                    for (int i = 0; i < artsArray.Length; i++) {
+                        string artStr = artsArray[i];
+                        //1.含有括號
+                        cht_arts_rule1_match = cht_arts_rule1.Match(artStr);// 中中中AAA(BBBB)
+                        if (cht_arts_rule1_match.Success) {
+                            ListArts1.Add(cht_arts_rule1_match.Groups[2].Value);//取出括號
+                            artStr = cht_arts_rule1_match.Groups[1].Value;//保留括號前的資料
+                        }
+                        ListArts.Add(artStr);
+                    }
+                    song.Arts = string.Join("/", ListArts.ToArray());
+                    song.Arts1 = string.Join("/", ListArts1.ToArray());
+                    song.Arts2 = string.Join("/", ListArts2.ToArray());
                     result["english"].Add(song);//英文作品
                 } else {
                     result["uncategory"].Add(song);//無法分類
@@ -381,38 +394,65 @@ namespace WindowsFormsApplication1 {
         }
 
         private void btnClearData_Click(object sender, EventArgs e) {
-            string filename = fileinfo.FullName;
-            if (!String.IsNullOrEmpty(filename)) {
-                songfilename = filename;
-                //clearData1(filename);
-                flag = true;
-                //單一執行緒
-                //AddRow();
-                //將job丟入ThreadPool Queue
-                //主緒繼續處理畫面
-                ThreadPool.QueueUserWorkItem(new WaitCallback(clearData1), filename);
-            }
-        }
-
-        private void btnOpenfile_Click(object sender, EventArgs e) {
-            using (OpenFileDialog od = new OpenFileDialog()) {
-                if (od.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
-                    string filename = od.FileName;
-                    txtFilename.Text = filename;
-
-                    fileinfo = new FileInfo(filename);
-                    lblFIlesize.Text = fileinfo.Length.ToString("#,00");
-                    maxFileSize = int.Parse(fileinfo.Length.ToString());
-                    progressOfFile.Maximum = maxFileSize;
+            if (isCheckExist.Checked && string.IsNullOrEmpty(txtExistFile.Text)) {
+                MessageBox.Show("請選擇已存在的csv檔，\n需轉換成utf8編碼\n需含有Admin ID,Title");
+            } else {
+                string filename = fileinfo.FullName;
+                if (!String.IsNullOrEmpty(filename)) {
+                    songfilename = filename;
+                    //clearData1(filename);
+                    flag = true;
+                    //單一執行緒
+                    //AddRow();
+                    //將job丟入ThreadPool Queue
+                    //主緒繼續處理畫面
+                    ThreadPool.QueueUserWorkItem(new WaitCallback(clearData1), filename);
                 }
             }
         }
 
         private void 說明LToolStripButton_Click(object sender, EventArgs e) {
-            MessageBox.Show("updated at 2014/2/10");
+            MessageBox.Show("updated at 2014/2/13");
         }
 
-        private void 開啟OToolStripButton_Click(object sender, EventArgs e) {
+        private void Form1_Load(object sender, EventArgs e) {
+
+        }
+
+        private void btnGetExistFile_Click(object sender, EventArgs e) {
+            using (OpenFileDialog od = new OpenFileDialog()) {
+                if (od.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
+                    string filename = od.FileName;
+                    CsvFileDescription cv = new CsvFileDescription {
+                        SeparatorChar = ',',
+                        FirstLineHasColumnNames = false,
+                        EnforceCsvColumnAttribute = true
+                    };
+                    CsvContext cc = new CsvContext();
+                    IEnumerable<existSong> songlist = cc.Read<existSong>(filename, cv);
+                    foreach (existSong song in songlist) {
+                        if (!this.existSong.ContainsKey(song.AdamId)) {
+                            this.existSong.Add(song.AdamId, string.Format("{0},{1}", song.AdamId, song.Title));
+                        }
+                    }
+                    MessageBox.Show(string.Format("已載入{0}筆已存在的資料", this.existSong.Count.ToString("#,00")));
+                    txtExistFile.Text = filename;
+                }
+            }
+        }
+
+        private void isCheckExist_CheckedChanged(object sender, EventArgs e) {
+            txtExistFile.Clear();
+            if (isCheckExist.Checked) {
+                btnGetExistFile.Enabled = true;
+                MessageBox.Show("請選擇已存在的csv檔，\n需轉換成utf8編碼\n需含有Admin ID,Title");
+            } else {
+                btnGetExistFile.Enabled = false;
+                existSong.Clear();
+            }
+        }
+
+        private void btnLoadUnreconizeFile_Click(object sender, EventArgs e) {
             using (OpenFileDialog od = new OpenFileDialog()) {
                 if (od.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
                     string filename = od.FileName;
@@ -425,10 +465,6 @@ namespace WindowsFormsApplication1 {
                     btnClearData.Focus();
                 }
             }
-        }
-
-        private void Form1_Load(object sender, EventArgs e) {
-            
         }
     }
 }

@@ -13,6 +13,7 @@ using LINQtoCSV;
 
 namespace WindowsFormsApplication1 {
     public partial class Form1 : Form {
+        private string modifiedDate = "2014/2/16";
         Boolean flag = false;
         int maxFileSize = 0;
         int currentProgressSize = 0;
@@ -172,6 +173,7 @@ namespace WindowsFormsApplication1 {
 
             //華語作品
             Regex zho_rule1 = new Regex(@"[\u4e00-\u9fff\s]+[/\+][\u4e00-\u9fff\s]+", RegexOptions.IgnoreCase);
+            Regex zho_rule1_1 = new Regex(@"\([\u4e00-\u9fff\s]+[/\+][\u4e00-\u9fff\s]+\)", RegexOptions.IgnoreCase);
             Regex cht_title_rule1 = new Regex(@"(.*)\((.*)\)");
             Match cht_title_rule1_match = null;
 
@@ -183,7 +185,8 @@ namespace WindowsFormsApplication1 {
             List<string> ListArts = new List<string>();
             List<string> ListArts1 = new List<string>();
             List<string> ListArts2 = new List<string>();
-            Regex cht_title_rule2 = new Regex(@"\((.*)\)");//華語要置換title的[.,]為空白
+            Regex cht_title_rule2 = new Regex(@"[\.\,]");//[.,]置換為空白
+            Regex cht_title_rule3 = new Regex(@"[\.]");//[.]置換為空白
 
             //英語作品
             Regex eng_rule1 = new Regex(@"^(the|a|an)\s", RegexOptions.IgnoreCase);
@@ -191,10 +194,11 @@ namespace WindowsFormsApplication1 {
             Regex eng_rule2 = new Regex(@"(\(|\[|\{)(karaoke.*)?(Originally)?\sPerformed\sBy\s(.*)(\)|\]|\})", RegexOptions.IgnoreCase);
             Match eng_rule2_match = null;
             Regex eng_rule3_1 = new Regex(@"[:\.,]", RegexOptions.IgnoreCase);
-            Regex eng_rule3_2 = new Regex(@"symphony.*", RegexOptions.IgnoreCase);
+            Regex eng_rule3_2 = new Regex(@"^symphony.*", RegexOptions.IgnoreCase);
             Match eng_rule3_1_match = null;
             Match eng_rule3_2_match = null;
             Regex eng_rule4 = new Regex(@"[a-zA-Z\s]+/[a-zA-Z\s]+", RegexOptions.IgnoreCase);
+            Regex eng_rule4_1 = new Regex(@"\([a-zA-Z\s]+/[a-zA-Z\s]+\)", RegexOptions.IgnoreCase);
 
             //其它作品
             Regex other_rule1 = new Regex(@".*\((.*)\).*", RegexOptions.IgnoreCase);
@@ -288,24 +292,33 @@ namespace WindowsFormsApplication1 {
                     *1.Title內含有()通常為其翻譯曲名，擷取()內文字另為一欄為sub-title，
                      * 但如()内文字開頭為Originally Performed By…則為另一欄為performer
                      */
+                    result["other"].Add(song);//日韓文 其它作品
+
                     other_rule1_match = other_rule1.Match(song.Title);
                     if (other_rule1_match != null && other_rule1_match.Success) {
                         song.subTitle = other_rule1_match.Groups[1].Value;
                     }
-                    result["other"].Add(song);//日韓文 其它作品
+                    
                 } else if (isChniese.Match(song.Title).Success) {
-                    //華語作品：Title中含有/且前後都是中文字時，另列為組曲類型作品
-                    if (zho_rule1.Match(song.Title).Success) {
-                        song.Category += "Group,";
-                    }
                     result["chinese"].Add(song);//華語作品
 
-                    //rule1:有括號要分2欄
+                    //title有括號要分2欄
                     cht_title_rule1_match = cht_title_rule1.Match(song.Title);
                     if (cht_title_rule1_match.Success) {
                         song.Title = cht_title_rule1_match.Groups[1].Value;
                         song.Title1 = cht_title_rule1_match.Groups[2].Value;
                     }
+
+                    //title中含有/且前後都是中文字時且不在括號中，另列為組曲類型作品
+                    if (zho_rule1.Match(song.Title).Success && !zho_rule1_1.Match(song.Title).Success) {
+                        song.Category += "Group,";
+                    }
+
+                    //title將.,置換成空白
+                    song.Title = cht_title_rule2.Replace(song.Title, replacement1);
+
+                    //arts將.置換成空白
+                    song.Arts = cht_title_rule3.Replace(song.Arts, replacement1);
 
                     //ARTS→ARTS1,ARTS2
                     artsArray = song.Arts.Split('/');//有些Arts會用/區隔
@@ -334,31 +347,44 @@ namespace WindowsFormsApplication1 {
                     song.Arts1 = string.Join("/", ListArts1.ToArray());
                     song.Arts2 = string.Join("/", ListArts2.ToArray());
 
-                    //華語要置換title的[.,]為空白
-                    song.Title = cht_title_rule2.Replace(song.Title, replacement1);
                 } else if (isEnglish.Match(song.Title).Success) {
                     /*
                     英文作品：(以下不分大小寫)
-                    1. Title字首為the、a、an則刪除
-                    2. Title含有()且其内文字開頭為Originally Performed By…則為另一欄為performer
-                    3. Title中同時含有三個以上的標點符號(冒號或逗號或句點)的時候，
-                       或是Title 開頭為Symphony另列為演奏(DP)作品
-                    4. Title中含有/且前後都是英文字時，另列為組曲類型作品
-                     */
+                    */
+                    result["english"].Add(song);//英文作品
+
+                    //Title字首為the、a、an則刪除
                     song.Title = eng_rule1.Replace(song.Title, string.Empty);
 
+                    //是否為DP
+                    // Title中同時含有三個以上的標點符號(冒號或逗號或句點)的時候，
+                    //或是Title 開頭為Symphony另列為演奏(DP)作品
                     eng_rule3_1_match = eng_rule3_1.Match(song.Title);
                     eng_rule3_2_match = eng_rule3_2.Match(song.Title);
                     if ((eng_rule3_1_match.Success && eng_rule3_1_match.Groups.Count > 3)
                         || (eng_rule3_2_match.Success)) {
                         song.Category += "DP,";
+                    } else {
+                        //title將.,置換成空白
+                        song.Title = cht_title_rule2.Replace(song.Title, replacement1);
+
+                        //arts將.置換成空白
+                        song.Arts = cht_title_rule3.Replace(song.Arts, replacement1);
                     }
 
-                    if (eng_rule4.Match(song.Title).Success) {
+                    //title將括號內另置title1並移除括號及其內容
+                    cht_title_rule1_match = cht_title_rule1.Match(song.Title);
+                    if (cht_title_rule1_match.Success) {
+                        song.Title = cht_title_rule1_match.Groups[1].Value;
+                        song.Title1 = cht_title_rule1_match.Groups[2].Value;
+                    }
+
+                    //組曲 Title中含有/且前後都是英文字時且不在括號內，另列為組曲類型作品
+                    if (eng_rule4.Match(song.Title).Success && !eng_rule4_1.Match(song.Title).Success) {
                         song.Category += "Group,";
                     }
 
-                    //ARTS→ARTS1,ARTS2
+                    //arts將括號內另置arts1並移除括號及其內容
                     artsArray = song.Arts.Split('/');//有些Arts會用/區隔
                     ListArts.Clear();
                     ListArts1.Clear();
@@ -376,7 +402,7 @@ namespace WindowsFormsApplication1 {
                     song.Arts = string.Join("/", ListArts.ToArray());
                     song.Arts1 = string.Join("/", ListArts1.ToArray());
                     song.Arts2 = string.Join("/", ListArts2.ToArray());
-                    result["english"].Add(song);//英文作品
+                    
                 } else {
                     result["uncategory"].Add(song);//無法分類
                 }
@@ -412,7 +438,7 @@ namespace WindowsFormsApplication1 {
         }
 
         private void 說明LToolStripButton_Click(object sender, EventArgs e) {
-            MessageBox.Show("updated at 2014/2/13");
+            MessageBox.Show("updated at " + modifiedDate);
         }
 
         private void Form1_Load(object sender, EventArgs e) {
